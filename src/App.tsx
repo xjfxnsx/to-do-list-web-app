@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Column from './components/Column';
+import './App.css';
 
 interface Task {
   id: number;
