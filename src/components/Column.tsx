@@ -1,5 +1,6 @@
 import React from "react";
 import Card from "./Card";
+import { Droppable } from 'react-beautiful-dnd';
 
 interface Task {
     id: number;
@@ -15,7 +16,12 @@ interface ColumnProps {
 
 const Column: React.FC<ColumnProps> = ({ title, tasks }) => {
     return (
-        <div style = {
+        <Droppable droppableId={title}>
+            {(provided) => (
+        <div 
+        {...provided.droppableProps}
+        ref={provided.innerRef}
+        style = {
             { border: '1px solid black',
             width: '30%',
             padding: '10px',
@@ -30,7 +36,10 @@ const Column: React.FC<ColumnProps> = ({ title, tasks }) => {
                 deadline={task.deadline}
                 />
             ))}
+            {provided.placeholder}
         </div>
+        )}
+        </Droppable>
     );
 };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Column from './components/Column';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import './App.css';
 
 interface Task {
@@ -25,17 +26,37 @@ const App: React.FC = () => {
     },
   ]);
 
+  const onDragEnd = (result: DropResult) => {
+    const { source, destination } = result;
+    
+    if (!destination || 
+      (source.droppableId === destination.droppableId &&
+    source.index === destination.index)) {
+      return;
+    }
+
+    const updatedTasks = Array.from(tasks);
+
+    const [movedTask] = updatedTasks.splice(source.index, 1);
+
+    updatedTasks.splice(destination.index, 0, movedTask);
+
+    setTasks(updatedTasks);
+  }
+
   return (
-    <div style={
-      {
-        display: 'flex',
-        justifyContent: 'space-around'
-      }
-    }>
-      <Column title='Task' tasks={tasks}/>
-      <Column title='In Process' tasks={[]}/>
-      <Column title='Done' tasks={[]}/>
-    </div>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div style={
+        {
+          display: 'flex',
+          justifyContent: 'space-around'
+        }
+      }>
+        <Column title='Task' tasks={tasks} />
+        <Column title='In Process' tasks={[]} />
+        <Column title='Done' tasks={[]} />
+      </div>
+    </DragDropContext>
   );
 };
 
