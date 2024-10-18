@@ -11,9 +11,9 @@ interface Task {
 }
 
 const App: React.FC = () => {
-  const [tasks, setTasks] = useState<Task[]>(() => {
+  const [tasksTodo, setTasksTodo] = useState<Task[]>(() => {
 
-    const savedTasks = localStorage.getItem('tasks');
+    const savedTasks = localStorage.getItem('tasksTodo');
     return savedTasks ? JSON.parse(savedTasks) : [
 
       {
@@ -31,9 +31,21 @@ const App: React.FC = () => {
     ];
   });
 
+  const [tasksInProgress, setTasksInProgress] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('tasksInProgress');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+
+  const [tasksDone, setTasksDone] = useState<Task[]>(() => {
+    const savedTasks = localStorage.getItem('tasksDone');
+    return savedTasks ? JSON.parse(savedTasks) : [];
+  });
+
   useEffect(() => {
-    localStorage.setItem('tasks', JSON.stringify(tasks));
-  }, [tasks]);
+    localStorage.setItem('tasksTodo', JSON.stringify(tasksTodo));
+    localStorage.setItem('tasksInProgress', JSON.stringify(tasksInProgress));
+    localStorage.setItem('tasksDone', JSON.stringify(tasksDone));
+  }, [tasksTodo, tasksInProgress, tasksDone]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -44,13 +56,26 @@ const App: React.FC = () => {
       return;
     }
 
-    const updatedTasks = Array.from(tasks);
+    let sourceTasks =
+      source.droppableId === 'Task' ?
+      tasksTodo : source.droppableId === 'In Progress' ?
+      tasksInProgress : tasksDone;
 
-    const [movedTask] = updatedTasks.splice(source.index, 1);
+    let destinationTasks =
+    destination.droppableId === 'Task' ?
+    tasksTodo : destination.droppableId === 'In Progress' ?
+    tasksInProgress : tasksDone;
 
-    updatedTasks.splice(destination.index, 0, movedTask);
-
-    setTasks(updatedTasks);
+    const [movedTask] = sourceTasks.splice(source.index, 1);
+    destinationTasks.splice(destination.index, 0, movedTask);
+  
+    if (source.droppableId === 'Задача') setTasksTodo([...sourceTasks]);
+    if (source.droppableId === 'В процессе') setTasksInProgress([...sourceTasks]);
+    if (source.droppableId === 'Готово') setTasksDone([...sourceTasks]);
+  
+    if (destination.droppableId === 'Задача') setTasksTodo([...destinationTasks]);
+    if (destination.droppableId === 'В процессе') setTasksInProgress([...destinationTasks]);
+    if (destination.droppableId === 'Готово') setTasksDone([...destinationTasks]);
   }
 
   return (
@@ -61,9 +86,9 @@ const App: React.FC = () => {
           justifyContent: 'space-around'
         }
       }>
-        <Column title='Task' tasks={tasks} />
-        <Column title='In Process' tasks={[]} />
-        <Column title='Done' tasks={[]} />
+        <Column title='Task' tasks={tasksTodo} />
+        <Column title='In Process' tasks={tasksInProgress} />
+        <Column title='Done' tasks={tasksInProgress} />
       </div>
     </DragDropContext>
   );
