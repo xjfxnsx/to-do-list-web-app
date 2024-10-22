@@ -58,25 +58,35 @@ const App: React.FC = () => {
 
     let sourceTasks =
       source.droppableId === 'Task' ?
-      tasksTodo : source.droppableId === 'In Progress' ?
-      tasksInProgress : tasksDone;
+        tasksTodo : source.droppableId === 'In Progress' ?
+          tasksInProgress : tasksDone;
 
     let destinationTasks =
-    destination.droppableId === 'Task' ?
-    tasksTodo : destination.droppableId === 'In Progress' ?
-    tasksInProgress : tasksDone;
+      destination.droppableId === 'Task' ?
+        tasksTodo : destination.droppableId === 'In Progress' ?
+          tasksInProgress : tasksDone;
 
     const [movedTask] = sourceTasks.splice(source.index, 1);
     destinationTasks.splice(destination.index, 0, movedTask);
-  
-    if (source.droppableId === 'Задача') setTasksTodo([...sourceTasks]);
-    if (source.droppableId === 'В процессе') setTasksInProgress([...sourceTasks]);
-    if (source.droppableId === 'Готово') setTasksDone([...sourceTasks]);
-  
-    if (destination.droppableId === 'Задача') setTasksTodo([...destinationTasks]);
-    if (destination.droppableId === 'В процессе') setTasksInProgress([...destinationTasks]);
-    if (destination.droppableId === 'Готово') setTasksDone([...destinationTasks]);
+
+    if (source.droppableId === 'Task') setTasksTodo([...sourceTasks]);
+    if (source.droppableId === 'In Progress') setTasksInProgress([...sourceTasks]);
+    if (source.droppableId === 'Done') setTasksDone([...sourceTasks]);
+
+    if (destination.droppableId === 'Task') setTasksTodo([...destinationTasks]);
+    if (destination.droppableId === 'In Progress') setTasksInProgress([...destinationTasks]);
+    if (destination.droppableId === 'Done') setTasksDone([...destinationTasks]);
   }
+
+  const handleDeleteTask = (taskId: number, column: string) => {
+    if (column === 'Задача') {
+      setTasksTodo(tasksTodo.filter(task => task.id !== taskId));
+    } else if (column === 'В процессе') {
+      setTasksInProgress(tasksInProgress.filter(task => task.id !== taskId));
+    } else if (column === 'Готово') {
+      setTasksDone(tasksDone.filter(task => task.id !== taskId));
+    }
+  };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -86,9 +96,9 @@ const App: React.FC = () => {
           justifyContent: 'space-around'
         }
       }>
-        <Column title='Task' tasks={tasksTodo} />
-        <Column title='In Process' tasks={tasksInProgress} />
-        <Column title='Done' tasks={tasksInProgress} />
+        <Column title="Задача" tasks={tasksTodo} onDeleteTask={(id) => handleDeleteTask(id, 'Task')} />
+        <Column title="В процессе" tasks={tasksInProgress} onDeleteTask={(id) => handleDeleteTask(id, 'In Progress')} />
+        <Column title="Готово" tasks={tasksDone} onDeleteTask={(id) => handleDeleteTask(id, 'Done')} />
       </div>
     </DragDropContext>
   );
