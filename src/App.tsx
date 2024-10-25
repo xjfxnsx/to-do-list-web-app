@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Column from './components/Column';
 import { DragDropContext, DropResult } from 'react-beautiful-dnd';
 import './App.css';
+import { title } from 'process';
 
 interface Task {
   id: number;
@@ -14,21 +15,7 @@ const App: React.FC = () => {
   const [tasksTodo, setTasksTodo] = useState<Task[]>(() => {
 
     const savedTasks = localStorage.getItem('tasksTodo');
-    return savedTasks ? JSON.parse(savedTasks) : [
-
-      {
-        id: 1,
-        title: 'Learn TypeScript',
-        description: 'Pass tutorials and documentation.',
-        deadline: '2024-10-10'
-      },
-      {
-        id: 2,
-        title: 'Create To-Do App',
-        description: 'Create project with columns and cards.',
-        deadline: '2024-10-15'
-      },
-    ];
+    return savedTasks ? JSON.parse(savedTasks) : [];
   });
 
   const [tasksInProgress, setTasksInProgress] = useState<Task[]>(() => {
@@ -41,11 +28,36 @@ const App: React.FC = () => {
     return savedTasks ? JSON.parse(savedTasks) : [];
   });
 
+  const [newTask, setNewTask] = useState({
+    title: '',
+    description: '',
+    deadline: '',
+  })
+
   useEffect(() => {
     localStorage.setItem('tasksTodo', JSON.stringify(tasksTodo));
     localStorage.setItem('tasksInProgress', JSON.stringify(tasksInProgress));
     localStorage.setItem('tasksDone', JSON.stringify(tasksDone));
   }, [tasksTodo, tasksInProgress, tasksDone]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewTask(prevTask => ({ ...prevTask, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const task = {
+      id: Date.now(),
+      title: newTask.title,
+      description: newTask.description,
+      deadline: newTask.deadline,
+    };
+
+    setTasksTodo([...tasksTodo, task]);
+    setNewTask({ title: '', description: '', deadline: ''});
+  };
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -79,16 +91,46 @@ const App: React.FC = () => {
   }
 
   const handleDeleteTask = (taskId: number, column: string) => {
-    if (column === 'Задача') {
+    if (column === 'Task') {
       setTasksTodo(tasksTodo.filter(task => task.id !== taskId));
-    } else if (column === 'В процессе') {
+    } else if (column === 'In Progress') {
       setTasksInProgress(tasksInProgress.filter(task => task.id !== taskId));
-    } else if (column === 'Готово') {
+    } else if (column === 'Done') {
       setTasksDone(tasksDone.filter(task => task.id !== taskId));
     }
   };
 
   return (
+
+    <div>
+
+      <h2>Create New Task</h2>
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="title"
+          value={newTask.title}
+          onChange={handleInputChange}
+          placeholder="Task Name"
+          required
+        />
+        <input
+          type="text"
+          name="description"
+          value={newTask.description}
+          onChange={handleInputChange}
+          placeholder="Task Description"
+          required
+        />
+        <input
+          type="date"
+          name="deadline"
+          value={newTask.deadline}
+          onChange={handleInputChange}
+          required
+        />
+        <button type="submit">Add Task</button>
+      </form>
     <DragDropContext onDragEnd={onDragEnd}>
       <div style={
         {
@@ -96,11 +138,12 @@ const App: React.FC = () => {
           justifyContent: 'space-around'
         }
       }>
-        <Column title="Задача" tasks={tasksTodo} onDeleteTask={(id) => handleDeleteTask(id, 'Task')} />
-        <Column title="В процессе" tasks={tasksInProgress} onDeleteTask={(id) => handleDeleteTask(id, 'In Progress')} />
-        <Column title="Готово" tasks={tasksDone} onDeleteTask={(id) => handleDeleteTask(id, 'Done')} />
+        <Column title="Task" tasks={tasksTodo} onDeleteTask={(id) => handleDeleteTask(id, 'Task')} />
+        <Column title="In Progress" tasks={tasksInProgress} onDeleteTask={(id) => handleDeleteTask(id, 'In Progress')} />
+        <Column title="Done" tasks={tasksDone} onDeleteTask={(id) => handleDeleteTask(id, 'Done')} />
       </div>
     </DragDropContext>
+    </div>
   );
 };
 

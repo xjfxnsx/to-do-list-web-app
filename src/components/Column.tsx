@@ -42,8 +42,8 @@ const Column: React.FC<ColumnProps> = ({ title, tasks, onDeleteTask }) => {
                   >
                     <h3>{task.title}</h3>
                     <p>{task.description}</p>
-                    <p>Дедлайн: {task.deadline}</p>
-                    <button onClick={() => onDeleteTask(task.id)}>Удалить</button>
+                    <p>Deadline: {task.deadline}</p>
+                    <button onClick={() => onDeleteTask(task.id)}>Delete</button>
                   </div>
                 )}
               </Draggable>
